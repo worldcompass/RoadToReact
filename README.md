@@ -1,2 +1,0 @@
-# RoadToReact
-Created with CodeSandbox
