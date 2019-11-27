@@ -34,23 +34,40 @@ const isSearched = searchTerm => item =>
 
 //main component
 const App = () => {
-  const [searchTerm, setSearch] = useState("");
+  const [searchTerm, setSearch] = useState("react");
+  const [query, setQuery] = useState("react");
   const [newList, setList] = useState(list);
+  const [isLoading, setLoading] = useState(false);
+  const [isError, setError] = useState(false);
 
   useEffect(() => {
     if (searchTerm.length) {
+      setLoading(true);
       fetch(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}`)
         .then(response => response.json())
-        .then(result => setList(result.hits))
-        .catch(error => error);
+        .then(result => {
+          setList(result.hits);
+          setLoading(false);
+        })
+        .catch(error => {
+          error;
+          setLoading(false);
+          setError(true);
+        });
     } else {
       setList(list);
     }
   }, [searchTerm]);
 
   //updating search string
-  const onSearchChange = event => {
-    setSearch(event.target.value);
+  const onChange = event => {
+    event.preventDefault();
+    setQuery(event.target.value);
+  };
+
+  const onStartSearch = event => {
+    event.preventDefault();
+    setSearch(query);
   };
 
   //dismiss button logic
@@ -62,19 +79,30 @@ const App = () => {
   return (
     <div className="page">
       <div className="interactions">
-        <Search value={searchTerm} onChange={onSearchChange}>
+        <Search value={query} onChange={onChange} onClick={onStartSearch}>
           Search
         </Search>
       </div>
-      <Table list={newList} pattern={searchTerm} onDismiss={onDismiss} />
+      {isError && <div>something went wrong ... </div>}
+      <div>
+        {isLoading ? (
+          <div>Loading ... </div>
+        ) : (
+          <Table list={newList} pattern={searchTerm} onDismiss={onDismiss} />
+        )}
+      </div>
     </div>
   );
 };
 
 //search component with form
-const Search = ({ value, onChange, children }) => (
+const Search = ({ value, onChange, children, onClick }) => (
   <form>
     {children} <input type="text" value={value} onChange={onChange} />
+    <button type="submit" onClick={onClick}>
+      {" "}
+      start searching
+    </button>
   </form>
 );
 
