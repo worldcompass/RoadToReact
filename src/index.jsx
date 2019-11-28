@@ -26,11 +26,8 @@ const DEFAULT_QUERY = "redux";
 const PATH_BASE = "https://hn.algolia.com/api/v1";
 const PATH_SEARCH = "/search";
 const PARAM_SEARCH = "query=";
-const url = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${DEFAULT_QUERY}`;
-
-//callback function to search
-const isSearched = searchTerm => item =>
-  item.title.toLowerCase().includes(searchTerm.toLowerCase());
+const PARAM_PAGE = "page=";
+const url = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${DEFAULT_QUERY}&${PARAM_PAGE}`;
 
 //main component
 const App = () => {
@@ -39,11 +36,17 @@ const App = () => {
   const [newList, setList] = useState(list);
   const [isLoading, setLoading] = useState(false);
   const [isError, setError] = useState(false);
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
+    // page = (newList && newList.page) || 0;
+
     if (searchTerm.length) {
       setLoading(true);
-      fetch(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}`)
+
+      fetch(
+        `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}`
+      )
         .then(response => response.json())
         .then(result => {
           setList(result.hits);
@@ -54,10 +57,11 @@ const App = () => {
           setLoading(false);
           setError(true);
         });
+      console.log(page);
     } else {
       setList(list);
     }
-  }, [searchTerm]);
+  }, [searchTerm, page]);
 
   //updating search string
   const onChange = event => {
@@ -65,10 +69,16 @@ const App = () => {
     setQuery(event.target.value);
   };
 
+  //event on click on start searching button
   const onStartSearch = event => {
     event.preventDefault();
     setSearch(query);
   };
+
+  // const fetchSearchTopStories = () => {
+  //   setPage((page)=>page++);
+  //   // setSearch(query);
+  // };
 
   //dismiss button logic
   const onDismiss = id => {
@@ -88,8 +98,11 @@ const App = () => {
         {isLoading ? (
           <div>Loading ... </div>
         ) : (
-          <Table list={newList} pattern={searchTerm} onDismiss={onDismiss} />
+          <Table list={newList} onDismiss={onDismiss} />
         )}
+      </div>
+      <div className="interactions">
+        <button onClick={() => setPage(page + 1)}>More</button>
       </div>
     </div>
   );
@@ -97,19 +110,16 @@ const App = () => {
 
 //search component with form
 const Search = ({ value, onChange, children, onClick }) => (
-  <form>
+  <form onSubmit={onClick}>
     {children} <input type="text" value={value} onChange={onChange} />
-    <button type="submit" onClick={onClick}>
-      {" "}
-      start searching
-    </button>
+    <button type="submit">start searching</button>
   </form>
 );
 
 //table component which renders data from LIST
-const Table = ({ list, pattern, onDismiss }) => (
+const Table = ({ list, onDismiss }) => (
   <div className="table">
-    {list.filter(isSearched(pattern)).map(item => (
+    {list.map(item => (
       <div key={item.objectID} className="table-row">
         <span style={largeColumn}>
           <a href={item.url}>{item.title}</a>
