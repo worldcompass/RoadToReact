@@ -27,37 +27,38 @@ const PATH_BASE = "https://hn.algolia.com/api/v1";
 const PATH_SEARCH = "/search";
 const PARAM_SEARCH = "query=";
 const PARAM_PAGE = "page=";
+const DEFAUL_HPP = "10";
+const PARAM_HPP = "hitsPerPage=";
 const url = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${DEFAULT_QUERY}&${PARAM_PAGE}`;
 
 //main component
 const App = () => {
   const [searchTerm, setSearch] = useState("react");
   const [query, setQuery] = useState("react");
-  const [newList, setList] = useState(list);
+  const [newList, setList] = useState([]);
   const [isLoading, setLoading] = useState(false);
   const [isError, setError] = useState(false);
   const [page, setPage] = useState(0);
 
   useEffect(() => {
-    // page = (newList && newList.page) || 0;
-
     if (searchTerm.length) {
       setLoading(true);
-
       fetch(
-        `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}`
+        `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAUL_HPP}`
       )
         .then(response => response.json())
         .then(result => {
-          setList(result.hits);
+          const { hits } = result;
+          const updatedHits = [...newList, ...hits];
+          setList(updatedHits);
           setLoading(false);
         })
         .catch(error => {
-          error;
           setLoading(false);
           setError(true);
+          console.log(error.message);
+          console.log(error.lineNumber);
         });
-      console.log(page);
     } else {
       setList(list);
     }
@@ -74,11 +75,6 @@ const App = () => {
     event.preventDefault();
     setSearch(query);
   };
-
-  // const fetchSearchTopStories = () => {
-  //   setPage((page)=>page++);
-  //   // setSearch(query);
-  // };
 
   //dismiss button logic
   const onDismiss = id => {
@@ -101,8 +97,17 @@ const App = () => {
           <Table list={newList} onDismiss={onDismiss} />
         )}
       </div>
+
+      {/* {console.log(newList.page)} */}
+
       <div className="interactions">
-        <button onClick={() => setPage(page + 1)}>More</button>
+        <button
+          onClick={() => {
+            setPage(page + 1);
+          }}
+        >
+          More
+        </button>
       </div>
     </div>
   );
