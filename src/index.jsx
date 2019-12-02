@@ -22,7 +22,7 @@ const list = [
   }
 ];
 
-const DEFAULT_QUERY = "redux";
+const DEFAULT_QUERY = "react";
 const PATH_BASE = "https://hn.algolia.com/api/v1";
 const PATH_SEARCH = "/search";
 const PARAM_SEARCH = "query=";
@@ -33,12 +33,15 @@ const url = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${DEFAULT_QUERY}&${PARAM_
 
 //main component
 const App = () => {
-  const [searchTerm, setSearch] = useState("react");
+  const [searchTerm, setSearch] = useState(DEFAULT_QUERY);
   const [query, setQuery] = useState("react");
   const [newList, setList] = useState([]);
   const [isLoading, setLoading] = useState(false);
   const [isError, setError] = useState(false);
   const [page, setPage] = useState(0);
+
+  const [results, setResults] = useState(null);
+  const [searchKey, setSearchKey] = useState("");
 
   useEffect(() => {
     if (searchTerm.length) {
@@ -74,6 +77,7 @@ const App = () => {
   const onStartSearch = event => {
     event.preventDefault();
     setSearch(query);
+    setList([]);
   };
 
   //dismiss button logic
@@ -98,7 +102,7 @@ const App = () => {
         )}
       </div>
 
-      {/* {console.log(newList.page)} */}
+      {console.log(query, searchTerm)}
 
       <div className="interactions">
         <button
