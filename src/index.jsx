@@ -40,8 +40,8 @@ const App = () => {
   const [isError, setError] = useState(false);
   const [page, setPage] = useState(0);
 
-  const [results, setResults] = useState(null);
-  const [searchKey, setSearchKey] = useState("");
+  const [results, setResults] = useState([]);
+  const [searchKey, setSearchKey] = useState(query);
 
   useEffect(() => {
     if (searchTerm.length) {
@@ -55,6 +55,7 @@ const App = () => {
           const updatedHits = [...newList, ...hits];
           setList(updatedHits);
           setLoading(false);
+          setResults({ ...results, [searchKey]: { hits: updatedHits, page } });
         })
         .catch(error => {
           setLoading(false);
@@ -65,7 +66,9 @@ const App = () => {
     } else {
       setList(list);
     }
-  }, [searchTerm, page]);
+
+    setSearchKey(searchTerm);
+  }, [searchTerm, page, searchKey]);
 
   //updating search string
   const onChange = event => {
@@ -78,6 +81,7 @@ const App = () => {
     event.preventDefault();
     setSearch(query);
     setList([]);
+    setSearchKey(searchTerm);
   };
 
   //dismiss button logic
@@ -102,7 +106,7 @@ const App = () => {
         )}
       </div>
 
-      {console.log(query, searchTerm)}
+      {/* {console.log(results)} */}
 
       <div className="interactions">
         <button
