@@ -44,29 +44,40 @@ const App = () => {
   const [searchKey, setSearchKey] = useState(query);
 
   useEffect(() => {
-    if (searchTerm.length) {
-      setLoading(true);
-      fetch(
-        `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAUL_HPP}`
-      )
-        .then(response => response.json())
-        .then(result => {
-          const { hits } = result;
-          const updatedHits = [...newList, ...hits];
-          setList(updatedHits);
-          setLoading(false);
-          setResults({ ...results, [searchKey]: { hits: updatedHits, page } });
-        })
-        .catch(error => {
-          setLoading(false);
-          setError(true);
-          console.log(error.message);
-          console.log(error.lineNumber);
-        });
-    } else {
-      setList(list);
-    }
+    const fetchSearchTopStories = searchTerm => {
+      if (searchTerm.length) {
+        setLoading(true);
+        fetch(
+          `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAUL_HPP}`
+        )
+          .then(response => response.json())
+          .then(result => {
+            const { hits } = result;
+            const updatedHits = [...newList, ...hits];
+            setList(updatedHits);
+            setLoading(false);
+            setResults(results => ({
+              ...results,
+              [searchKey]: { hits: updatedHits, page }
+            }));
+          })
+          .catch(error => {
+            setLoading(false);
+            setError(true);
+            console.log(error.message);
+            console.log(error.lineNumber);
+          });
+      } else {
+        setList(list);
+      }
+    };
 
+    if (!results[searchTerm]) {
+      fetchSearchTopStories(searchTerm);
+    } else {
+      setResults(results);
+    }
+    //
     setSearchKey(searchTerm);
   }, [searchTerm, page, searchKey]);
 
@@ -80,14 +91,16 @@ const App = () => {
   const onStartSearch = event => {
     event.preventDefault();
     setSearch(query);
-    setList([]);
     setSearchKey(searchTerm);
+    setList([]);
   };
 
   //dismiss button logic
   const onDismiss = id => {
+    const { hits, page } = results[searchKey];
     const isNotId = item => item.objectID !== id;
-    setList(newList.filter(isNotId));
+    const updatedHits = hits.filter(isNotId);
+    setResults({ ...results, [searchKey]: { hits: updatedHits, page } });
   };
 
   return (
@@ -102,11 +115,16 @@ const App = () => {
         {isLoading ? (
           <div>Loading ... </div>
         ) : (
-          <Table list={newList} onDismiss={onDismiss} />
+          <Table
+            list={
+              (results && results[searchKey] && results[searchKey].hits) || []
+            }
+            onDismiss={onDismiss}
+          />
         )}
       </div>
 
-      {/* {console.log(results)} */}
+      {console.log(results)}
 
       <div className="interactions">
         <button
