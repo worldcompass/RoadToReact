@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import "./App.css";
 import "./index.css";
+import axios from "axios";
 
 const list = [
   {
@@ -31,7 +32,7 @@ const DEFAUL_HPP = "10";
 const PARAM_HPP = "hitsPerPage=";
 const url = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${DEFAULT_QUERY}&${PARAM_PAGE}`;
 
-//main component
+//main componentk
 const App = () => {
   const [searchTerm, setSearch] = useState(DEFAULT_QUERY);
   const [query, setQuery] = useState("react");
@@ -39,45 +40,37 @@ const App = () => {
   const [isLoading, setLoading] = useState(false);
   const [isError, setError] = useState(false);
   const [page, setPage] = useState(0);
-
   const [results, setResults] = useState([]);
   const [searchKey, setSearchKey] = useState(query);
+  const [error, setErrorMessage] = useState(null);
 
   useEffect(() => {
-    const fetchSearchTopStories = searchTerm => {
-      if (searchTerm.length) {
-        setLoading(true);
-        fetch(
-          `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAUL_HPP}`
-        )
-          .then(response => response.json())
-          .then(result => {
-            const { hits } = result;
-            const updatedHits = [...newList, ...hits];
-            setList(updatedHits);
-            setLoading(false);
-            setResults(results => ({
-              ...results,
-              [searchKey]: { hits: updatedHits, page }
-            }));
-          })
-          .catch(error => {
-            setLoading(false);
-            setError(true);
-            console.log(error.message);
-            console.log(error.lineNumber);
-          });
-      } else {
-        setList(list);
-      }
-    };
-
-    if (!results[searchTerm]) {
-      fetchSearchTopStories(searchTerm);
+    if (searchTerm.length) {
+      setLoading(true);
+      axios(
+        `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAUL_HPP}`
+      )
+        .then(result => {
+          const { hits } = result.data;
+          const updatedHits = [...newList, ...hits];
+          setList(updatedHits);
+          setLoading(false);
+          setResults(results => ({
+            ...result.data,
+            [searchKey]: { hits: updatedHits, page }
+          }));
+        })
+        .catch(error => {
+          setLoading(false);
+          setError(true);
+          setErrorMessage(error);
+          console.log(error.message);
+          console.log(error.lineNumber);
+        });
     } else {
-      setResults(results);
+      setList(list);
     }
-    //
+
     setSearchKey(searchTerm);
   }, [searchTerm, page, searchKey]);
 
@@ -93,6 +86,7 @@ const App = () => {
     setSearch(query);
     setSearchKey(searchTerm);
     setList([]);
+    setPage(0);
   };
 
   //dismiss button logic
@@ -110,7 +104,7 @@ const App = () => {
           Search
         </Search>
       </div>
-      {isError && <div>something went wrong ... </div>}
+      {error && <div>something went wrong ... </div>}
       <div>
         {isLoading ? (
           <div>Loading ... </div>
@@ -124,7 +118,7 @@ const App = () => {
         )}
       </div>
 
-      {console.log(results)}
+      {/* {console.log(results)} */}
 
       <div className="interactions">
         <button
