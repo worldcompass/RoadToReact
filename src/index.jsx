@@ -106,7 +106,7 @@ const App = () => {
       {error && <div>something went wrong ... </div>}
       <div>
         {isLoading ? (
-          <div>Loading ... </div>
+          <Loading />
         ) : (
           <Table
             list={
@@ -184,6 +184,8 @@ const Button = ({ onClick, className = "", children }) => (
     {children}
   </button>
 );
+
+const Loading = () => <i class="fas fa-spinner"></i>;
 
 const largeColumn = { width: "60%" };
 const midColumn = { width: "30%" };

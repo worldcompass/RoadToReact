@@ -54,3 +54,11 @@
   border-radius: 0;
   border-bottom: 1px solid #38bb6c;
 }
+
+.fas {
+  height: 70vh;
+  font-size: 130px;
+  display: grid;
+  justify-content: center;
+  align-content: center;
+}
