@@ -184,21 +184,25 @@ const Table = ({ list, sortKey, onSort, onDismiss, isSortReverse }) => {
       <div className="table-header">
         <span style={largeColumn}>
           <Sort sortKey={"TITLE"} onSort={onSort} activeSortKey={sortKey}>
+            <ArrowWithIndicator isSortReverse={isSortReverse} />
             Title
           </Sort>
         </span>
         <span style={midColumn}>
           <Sort sortKey={"AUTHOR"} onSort={onSort} activeSortKey={sortKey}>
+            <ArrowWithIndicator isSortReverse={isSortReverse} />
             Author
           </Sort>
         </span>
         <span style={smallColumn}>
           <Sort sortKey={"COMMENTS"} onSort={onSort} activeSortKey={sortKey}>
+            <ArrowWithIndicator isSortReverse={isSortReverse} />
             Comments
           </Sort>
         </span>
         <span style={smallColumn}>
           <Sort sortKey={"POINTS"} onSort={onSort} activeSortKey={sortKey}>
+            <ArrowWithIndicator isSortReverse={isSortReverse} />
             Points
           </Sort>
         </span>
@@ -227,6 +231,8 @@ const Table = ({ list, sortKey, onSort, onDismiss, isSortReverse }) => {
   );
 };
 
+//arrow sort indicator for a button
+
 //dismiss button component to use in Table
 const Button = ({ onClick, className = "", children }) => (
   <button onClick={onClick} className={className} type="button">
@@ -235,7 +241,16 @@ const Button = ({ onClick, className = "", children }) => (
 );
 
 //loading component indicator
-const Loading = () => <i class="fas fa-spinner"></i>;
+const Loading = Component => <i class="fas fa-spinner"></i>;
+
+//sorting arrow HOC
+const withIndicator = Icon => ({ isSortReverse }) =>
+  isSortReverse ? <ArrowUp /> : <ArrowDown />;
+
+const ArrowWithIndicator = withIndicator(Icon);
+
+const ArrowUp = () => <i class="fas fa-arrow-up"></i>;
+const ArrowDown = () => <i class="fas fa-arrow-down"></i>;
 
 const withLoading = Component => ({ isLoading, ...rest }) =>
   isLoading ? <Loading /> : <Component {...rest} />;
