@@ -30,7 +30,6 @@ const PARAM_SEARCH = "query=";
 const PARAM_PAGE = "page=";
 const DEFAUL_HPP = "10";
 const PARAM_HPP = "hitsPerPage=";
-const url = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${DEFAULT_QUERY}&${PARAM_PAGE}`;
 
 //main componentk
 const App = () => {
@@ -134,12 +133,26 @@ const App = () => {
 };
 
 //search component with form
-const Search = ({ value, onChange, children, onClick }) => (
-  <form onSubmit={onClick}>
-    {children} <input type="text" value={value} onChange={onChange} />
-    <button type="submit">start searching</button>
-  </form>
-);
+const Search = ({ value, onChange, children, onClick }) => {
+  useEffect(() => {
+    if (input) {
+      input.focus();
+    }
+  });
+
+  let input;
+  return (
+    <form onSubmit={onClick}>
+      <input
+        type="text"
+        value={value}
+        onChange={onChange}
+        ref={el => (input = el)}
+      />
+      <button type="submit">{children}</button>
+    </form>
+  );
+};
 
 //table component which renders data from LIST
 const Table = ({ list, onDismiss }) => (
@@ -175,7 +188,9 @@ const Button = ({ onClick, className = "", children }) => (
 const largeColumn = { width: "60%" };
 const midColumn = { width: "30%" };
 const smallColumn = { width: "10%" };
-// export default App;
 
+export default App;
+
+export { Button, Search, Table };
 const rootElement = document.getElementById("root");
 ReactDOM.render(<App />, rootElement);
