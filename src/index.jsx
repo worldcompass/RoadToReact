@@ -3,6 +3,8 @@ import ReactDOM from "react-dom";
 import "./App.css";
 import "./index.css";
 import axios from "axios";
+import { sortBy } from "lodash";
+import classNames from "classnames";
 
 const list = [
   {
@@ -23,6 +25,14 @@ const list = [
   }
 ];
 
+const SORTS = {
+  NONE: list => list,
+  TITLE: list => sortBy(list, "title"),
+  AUTHOR: list => sortBy(list, "author"),
+  COMMENTS: list => sortBy(list, "num_comments").reverse(),
+  POINTS: list => sortBy(list, "points").reverse()
+};
+
 const DEFAULT_QUERY = "react";
 const PATH_BASE = "https://hn.algolia.com/api/v1";
 const PATH_SEARCH = "/search";
@@ -31,7 +41,7 @@ const PARAM_PAGE = "page=";
 const DEFAUL_HPP = "10";
 const PARAM_HPP = "hitsPerPage=";
 
-//main componentk
+//main component
 const App = () => {
   const [searchTerm, setSearch] = useState(DEFAULT_QUERY);
   const [query, setQuery] = useState("react");
@@ -42,6 +52,8 @@ const App = () => {
   const [results, setResults] = useState([]);
   const [searchKey, setSearchKey] = useState(query);
   const [error, setErrorMessage] = useState(null);
+  const [sortKey, setSortKey] = useState("NONE");
+  const [isSortReverse, setSortReverse] = useState(false);
 
   useEffect(() => {
     if (searchTerm.length) {
@@ -96,6 +108,12 @@ const App = () => {
     setResults({ ...results, [searchKey]: { hits: updatedHits, page } });
   };
 
+  //setting new sort option
+  const onSort = sortKey => {
+    setSortReverse(sortKey === sortKey && !isSortReverse);
+    setSortKey(sortKey);
+  };
+
   return (
     <div className="page">
       <div className="interactions">
@@ -113,20 +131,22 @@ const App = () => {
               (results && results[searchKey] && results[searchKey].hits) || []
             }
             onDismiss={onDismiss}
+            sortKey={sortKey}
+            onSort={onSort}
+            isSortReverse={isSortReverse}
           />
         )}
       </div>
-
       {/* {console.log(results)} */}
-
       <div className="interactions">
-        <button
+        <ButtonWithLoading
+          isLoading={isLoading}
           onClick={() => {
             setPage(page + 1);
           }}
         >
           More
-        </button>
+        </ButtonWithLoading>
       </div>
     </div>
   );
@@ -155,28 +175,57 @@ const Search = ({ value, onChange, children, onClick }) => {
 };
 
 //table component which renders data from LIST
-const Table = ({ list, onDismiss }) => (
-  <div className="table">
-    {list.map(item => (
-      <div key={item.objectID} className="table-row">
+const Table = ({ list, sortKey, onSort, onDismiss, isSortReverse }) => {
+  const sortedList = SORTS[sortKey](list);
+  const reverseSortedList = isSortReverse ? sortedList.reverse() : sortedList;
+
+  return (
+    <div className="table">
+      <div className="table-header">
         <span style={largeColumn}>
-          <a href={item.url}>{item.title}</a>
+          <Sort sortKey={"TITLE"} onSort={onSort} activeSortKey={sortKey}>
+            Title
+          </Sort>
         </span>
-        <span style={midColumn}>{item.author}</span>
-        <span style={smallColumn}>{item.num_comments}</span>
-        <span style={smallColumn}>{item.points}</span>
+        <span style={midColumn}>
+          <Sort sortKey={"AUTHOR"} onSort={onSort} activeSortKey={sortKey}>
+            Author
+          </Sort>
+        </span>
         <span style={smallColumn}>
-          <Button
-            onClick={() => onDismiss(item.objectID)}
-            className="button-inline"
-          >
-            Dismiss
-          </Button>
+          <Sort sortKey={"COMMENTS"} onSort={onSort} activeSortKey={sortKey}>
+            Comments
+          </Sort>
         </span>
+        <span style={smallColumn}>
+          <Sort sortKey={"POINTS"} onSort={onSort} activeSortKey={sortKey}>
+            Points
+          </Sort>
+        </span>
+        <span style={smallColumn}>Archive</span>
       </div>
-    ))}
-  </div>
-);
+
+      {reverseSortedList.map(item => (
+        <div key={item.objectID} className="table-row">
+          <span style={largeColumn}>
+            <a href={item.url}>{item.title}</a>
+          </span>
+          <span style={midColumn}>{item.author}</span>
+          <span style={smallColumn}>{item.num_comments}</span>
+          <span style={smallColumn}>{item.points}</span>
+          <span style={smallColumn}>
+            <Button
+              onClick={() => onDismiss(item.objectID)}
+              className="button-inline"
+            >
+              Dismiss
+            </Button>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 //dismiss button component to use in Table
 const Button = ({ onClick, className = "", children }) => (
@@ -185,7 +234,25 @@ const Button = ({ onClick, className = "", children }) => (
   </button>
 );
 
+//loading component indicator
 const Loading = () => <i class="fas fa-spinner"></i>;
+
+const withLoading = Component => ({ isLoading, ...rest }) =>
+  isLoading ? <Loading /> : <Component {...rest} />;
+
+const Sort = ({ sortKey, onSort, children, activeSortKey }) => {
+  const sortClass = classNames("button-inline", {
+    "button-active": sortKey === activeSortKey
+  });
+
+  return (
+    <Button onClick={() => onSort(sortKey)} className="button-inline">
+      {children}
+    </Button>
+  );
+};
+
+const ButtonWithLoading = withLoading(Button);
 
 const largeColumn = { width: "60%" };
 const midColumn = { width: "30%" };
