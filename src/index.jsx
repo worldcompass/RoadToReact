@@ -244,22 +244,22 @@ const Sort = ({ sortKey, onSort, children, activeSortKey }) => {
 };
 
 //step 1 sorting arrow HOC
-const withIndicator = Arrow => ({ isSortReverse, ...rest }) =>
+const withIndicator = () => ({ isSortReverse, ...rest }) =>
   isSortReverse ? <ArrowUp /> : <ArrowDown {...rest} />;
 
 //1.1
-const ArrowUp = Arrow => <i class="fas fa-arrow-up"></i>;
-const ArrowDown = Arrow => <i class="fas fa-arrow-down"></i>;
+const ArrowUp = () => <i class="fas fa-arrow-up"></i>;
+const ArrowDown = () => <i class="fas fa-arrow-down"></i>;
 
 //2
-const Arrow = ({ onClick, className = "", children }) => (
-  <button onClick={onClick} className={className} type="button">
-    {children}
-  </button>
-);
+// const Arrow = ({ onClick, className = "", children }) => (
+//   <button onClick={onClick} className={className} type="button">
+//     {children}
+//   </button>
+// );
 
 //loading component indicator
-const ArrowWithIndicator = withIndicator(Arrow);
+const ArrowWithIndicator = withIndicator();
 
 //step 1. creating HOC with "with"
 const withLoading = Component => ({ isLoading, ...rest }) =>
