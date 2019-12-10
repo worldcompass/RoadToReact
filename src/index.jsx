@@ -55,6 +55,11 @@ const App = () => {
   const [sortKey, setSortKey] = useState("NONE");
   const [isSortReverse, setSortReverse] = useState(false);
 
+  const [sortOnTitle, setSortOnTitle] = useState(false);
+  const [sortOnAuthor, setSortOnAuthor] = useState(false);
+  const [sortOnComments, setSortOnComments] = useState(false);
+  const [sortOnPoints, setSortOnPoints] = useState(true);
+
   useEffect(() => {
     if (searchTerm.length) {
       setLoading(true);
@@ -112,6 +117,28 @@ const App = () => {
   const onSort = sortKey => {
     setSortReverse(sortKey === sortKey && !isSortReverse);
     setSortKey(sortKey);
+
+    if (sortKey === "NONE" || sortKey === "POINTS") {
+      setSortOnTitle(false);
+      setSortOnAuthor(false);
+      setSortOnComments(false);
+      setSortOnPoints(true);
+    } else if (sortKey === "TITLE") {
+      setSortOnTitle(true);
+      setSortOnAuthor(false);
+      setSortOnComments(false);
+      setSortOnPoints(false);
+    } else if (sortKey === "AUTHOR") {
+      setSortOnTitle(false);
+      setSortOnAuthor(true);
+      setSortOnComments(false);
+      setSortOnPoints(false);
+    } else {
+      setSortOnTitle(false);
+      setSortOnAuthor(false);
+      setSortOnComments(true);
+      setSortOnPoints(false);
+    }
   };
 
   return (
@@ -134,10 +161,14 @@ const App = () => {
             sortKey={sortKey}
             onSort={onSort}
             isSortReverse={isSortReverse}
+            sortOnTitle={sortOnTitle}
+            sortOnAuthor={sortOnAuthor}
+            sortOnComments={sortOnComments}
+            sortOnPoints={sortOnPoints}
           />
         )}
       </div>
-      {/* {console.log(results)} */}
+      {console.log(sortKey)}
       <div className="interactions">
         <ButtonWithLoading
           isLoading={isLoading}
@@ -175,7 +206,17 @@ const Search = ({ value, onChange, children, onClick }) => {
 };
 
 //table component which renders data from LIST
-const Table = ({ list, sortKey, onSort, onDismiss, isSortReverse }) => {
+const Table = ({
+  list,
+  sortKey,
+  onSort,
+  onDismiss,
+  isSortReverse,
+  sortOnTitle,
+  sortOnAuthor,
+  sortOnComments,
+  sortOnPoints
+}) => {
   const sortedList = SORTS[sortKey](list);
   const reverseSortedList = isSortReverse ? sortedList.reverse() : sortedList;
 
@@ -184,25 +225,33 @@ const Table = ({ list, sortKey, onSort, onDismiss, isSortReverse }) => {
       <div className="table-header">
         <span style={largeColumn}>
           <Sort sortKey={"TITLE"} onSort={onSort} activeSortKey={sortKey}>
-            <ArrowWithIndicator isSortReverse={isSortReverse} />
+            {sortOnTitle ? (
+              <ArrowWithIndicator isSortReverse={isSortReverse} />
+            ) : null}
             Title
           </Sort>
         </span>
         <span style={midColumn}>
           <Sort sortKey={"AUTHOR"} onSort={onSort} activeSortKey={sortKey}>
-            <ArrowWithIndicator isSortReverse={isSortReverse} />
+            {sortOnAuthor ? (
+              <ArrowWithIndicator isSortReverse={isSortReverse} />
+            ) : null}
             Author
           </Sort>
         </span>
         <span style={smallColumn}>
           <Sort sortKey={"COMMENTS"} onSort={onSort} activeSortKey={sortKey}>
-            <ArrowWithIndicator isSortReverse={isSortReverse} />
+            {sortOnComments ? (
+              <ArrowWithIndicator isSortReverse={isSortReverse} />
+            ) : null}
             Comments
           </Sort>
         </span>
         <span style={smallColumn}>
           <Sort sortKey={"POINTS"} onSort={onSort} activeSortKey={sortKey}>
-            <ArrowWithIndicator isSortReverse={isSortReverse} />
+            {sortOnPoints ? (
+              <ArrowWithIndicator isSortReverse={isSortReverse} />
+            ) : null}
             Points
           </Sort>
         </span>
@@ -250,13 +299,6 @@ const withIndicator = () => ({ isSortReverse, ...rest }) =>
 //1.1
 const ArrowUp = () => <i class="fas fa-arrow-up"></i>;
 const ArrowDown = () => <i class="fas fa-arrow-down"></i>;
-
-//2
-// const Arrow = ({ onClick, className = "", children }) => (
-//   <button onClick={onClick} className={className} type="button">
-//     {children}
-//   </button>
-// );
 
 //loading component indicator
 const ArrowWithIndicator = withIndicator();
