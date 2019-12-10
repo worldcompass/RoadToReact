@@ -52,13 +52,6 @@ const App = () => {
   const [results, setResults] = useState([]);
   const [searchKey, setSearchKey] = useState(query);
   const [error, setErrorMessage] = useState(null);
-  const [sortKey, setSortKey] = useState("NONE");
-  const [isSortReverse, setSortReverse] = useState(false);
-
-  const [sortOnTitle, setSortOnTitle] = useState(false);
-  const [sortOnAuthor, setSortOnAuthor] = useState(false);
-  const [sortOnComments, setSortOnComments] = useState(false);
-  const [sortOnPoints, setSortOnPoints] = useState(true);
 
   useEffect(() => {
     if (searchTerm.length) {
@@ -113,34 +106,6 @@ const App = () => {
     setResults({ ...results, [searchKey]: { hits: updatedHits, page } });
   };
 
-  //setting new sort option
-  const onSort = sortKey => {
-    setSortReverse(sortKey === sortKey && !isSortReverse);
-    setSortKey(sortKey);
-
-    if (sortKey === "NONE" || sortKey === "POINTS") {
-      setSortOnTitle(false);
-      setSortOnAuthor(false);
-      setSortOnComments(false);
-      setSortOnPoints(true);
-    } else if (sortKey === "TITLE") {
-      setSortOnTitle(true);
-      setSortOnAuthor(false);
-      setSortOnComments(false);
-      setSortOnPoints(false);
-    } else if (sortKey === "AUTHOR") {
-      setSortOnTitle(false);
-      setSortOnAuthor(true);
-      setSortOnComments(false);
-      setSortOnPoints(false);
-    } else {
-      setSortOnTitle(false);
-      setSortOnAuthor(false);
-      setSortOnComments(true);
-      setSortOnPoints(false);
-    }
-  };
-
   return (
     <div className="page">
       <div className="interactions">
@@ -158,17 +123,10 @@ const App = () => {
               (results && results[searchKey] && results[searchKey].hits) || []
             }
             onDismiss={onDismiss}
-            sortKey={sortKey}
-            onSort={onSort}
-            isSortReverse={isSortReverse}
-            sortOnTitle={sortOnTitle}
-            sortOnAuthor={sortOnAuthor}
-            sortOnComments={sortOnComments}
-            sortOnPoints={sortOnPoints}
           />
         )}
       </div>
-      {console.log(sortKey)}
+      {/* {console.log(sortKey)} */}
       <div className="interactions">
         <ButtonWithLoading
           isLoading={isLoading}
@@ -206,17 +164,43 @@ const Search = ({ value, onChange, children, onClick }) => {
 };
 
 //table component which renders data from LIST
-const Table = ({
-  list,
-  sortKey,
-  onSort,
-  onDismiss,
-  isSortReverse,
-  sortOnTitle,
-  sortOnAuthor,
-  sortOnComments,
-  sortOnPoints
-}) => {
+const Table = ({ list, onDismiss }) => {
+  const [sortKey, setSortKey] = useState("NONE");
+  const [isSortReverse, setSortReverse] = useState(false);
+
+  const [sortOnTitle, setSortOnTitle] = useState(false);
+  const [sortOnAuthor, setSortOnAuthor] = useState(false);
+  const [sortOnComments, setSortOnComments] = useState(false);
+  const [sortOnPoints, setSortOnPoints] = useState(true);
+
+  //setting new sort option
+  const onSort = sortKey => {
+    setSortReverse(sortKey === sortKey && !isSortReverse);
+    setSortKey(sortKey);
+
+    if (sortKey === "NONE" || sortKey === "POINTS") {
+      setSortOnTitle(false);
+      setSortOnAuthor(false);
+      setSortOnComments(false);
+      setSortOnPoints(true);
+    } else if (sortKey === "TITLE") {
+      setSortOnTitle(true);
+      setSortOnAuthor(false);
+      setSortOnComments(false);
+      setSortOnPoints(false);
+    } else if (sortKey === "AUTHOR") {
+      setSortOnTitle(false);
+      setSortOnAuthor(true);
+      setSortOnComments(false);
+      setSortOnPoints(false);
+    } else {
+      setSortOnTitle(false);
+      setSortOnAuthor(false);
+      setSortOnComments(true);
+      setSortOnPoints(false);
+    }
+  };
+
   const sortedList = SORTS[sortKey](list);
   const reverseSortedList = isSortReverse ? sortedList.reverse() : sortedList;
 
